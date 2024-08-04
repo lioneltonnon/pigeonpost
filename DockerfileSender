@@ -1,0 +1,28 @@
+# Use Eclipse Temurin JDK to build the application and create custom JRE
+FROM eclipse-temurin:21 as builder
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the parent POM and the ChildA POM into the Docker image
+COPY ./pom.xml /app
+COPY ./sender/pom.xml /app/sender/
+
+# Copy the Maven wrapper and configuration files from ChildA
+COPY ./sender/mvnw /app/sender/
+COPY ./sender/.mvn /app/sender/.mvn
+
+# Ensure the Maven wrapper script is executable
+RUN chmod +x /app/sender/mvnw
+
+# Copy the application source code from ChildA
+COPY ./sender/src /app/sender/src
+
+# Build the application
+RUN cd /app/sender && ./mvnw clean package
+
+# Expose port 8080 (or whichever port your application uses)
+EXPOSE 8080
+
+# Run the application
+CMD ["java", "-jar", "/app/sender/target/sender-0.0.1-SNAPSHOT.jar"]
