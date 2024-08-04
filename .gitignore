@@ -1,0 +1,15 @@
+# Maven
+target/
+*.log
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Others
+*.tmp
+*.bak
+*.swp
+*~
+.DS_Store
