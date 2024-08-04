@@ -10,7 +10,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<groupId>com.lioneltonnon</groupId>
 	<artifactId>sender</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>sender</name>
