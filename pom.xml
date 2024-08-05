@@ -11,6 +11,7 @@
     <modules>
         <module>sender</module>
         <module>receiver</module>
+        <module>shared</module>
     </modules>
 
     <dependencyManagement>
