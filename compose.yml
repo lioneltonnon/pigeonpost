@@ -1,0 +1,34 @@
+services:
+  sender:
+    build:
+      context: .
+      dockerfile: DockerfileSender
+    ports:
+      - "8080:8080" # Maps host port 8080 to container port 8080
+    networks:
+      - pigeonpost-network
+    depends_on:
+      - rabbitmq
+
+  receiver:
+    build:
+      context: .
+      dockerfile: DockerfileReceiver
+    ports:
+      - "9090:9090" # Maps host port 9090 to container port 9090
+    networks:
+      - pigeonpost-network
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672" # RabbitMQ AMQP port
+      - "15672:15672" # RabbitMQ Management UI
+    networks:
+      - pigeonpost-network
+
+networks:
+  pigeonpost-network:
+    driver: bridge
