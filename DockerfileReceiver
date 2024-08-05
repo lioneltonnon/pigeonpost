@@ -22,7 +22,7 @@ COPY ./receiver/src /app/receiver/src
 RUN cd /app/receiver && ./mvnw clean package
 
 # Expose port 8080 (or whichever port your application uses)
-EXPOSE 8080
+EXPOSE 9090
 
 # Run the application
 CMD ["java", "-jar", "/app/receiver/target/receiver-0.0.1-SNAPSHOT.jar"]
