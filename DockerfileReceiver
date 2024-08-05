@@ -1,28 +1,43 @@
-# Use Eclipse Temurin JDK to build the application and create custom JRE
-FROM eclipse-temurin:21 as builder
+# Stage 1: Build the shared module and install it in the local Maven repository
+FROM eclipse-temurin:21 as base
 
-# Set the working directory in the container
+# Install Maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
 WORKDIR /app
 
-# Copy the parent POM and the ChildA POM into the Docker image
-COPY ./pom.xml /app
+# Copy the parent POM and module POMs
+COPY ./pom.xml /app/
+COPY ./sender/pom.xml /app/sender/
 COPY ./receiver/pom.xml /app/receiver/
 
-# Copy the Maven wrapper and configuration files from ChildA
-COPY ./receiver/mvnw /app/receiver/
-COPY ./receiver/.mvn /app/receiver/.mvn
+# Copy all module source codes
+COPY ./shared /app/shared
+COPY ./sender /app/sender
+COPY ./receiver /app/receiver
 
-# Ensure the Maven wrapper script is executable
-RUN chmod +x /app/receiver/mvnw
+# Install the shared module in the local Maven repository
+RUN mvn -f /app/pom.xml clean install -pl shared -am
 
-# Copy the application source code from ChildA
-COPY ./receiver/src /app/receiver/src
+# Stage 2: Build the receiver application using the shared module
+FROM base as receiver-builder
 
-# Build the application
-RUN cd /app/receiver && ./mvnw clean package
+# Build the receiver module
+RUN mvn -f /app/receiver/pom.xml clean package
 
-# Expose port 8080 (or whichever port your application uses)
+# Stage 3: Create a lightweight runtime image for the receiver application
+# TODO change DockerfileReceiver runtime image from temurin-jre to jlink custom image
+FROM eclipse-temurin:21-jre as receiver
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the built JAR from the builder stage
+COPY --from=receiver-builder /app/receiver/target/receiver-0.0.1-SNAPSHOT.jar /app/receiver.jar
+
+# Expose the application port
 EXPOSE 9090
 
 # Run the application
-CMD ["java", "-jar", "/app/receiver/target/receiver-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "/app/receiver.jar"]
